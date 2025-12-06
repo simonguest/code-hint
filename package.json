@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
+    "gh-pages": "vue-tsc && vite build --base=/code-hint/",
     "preview": "vite preview"
   },
   "dependencies": {
