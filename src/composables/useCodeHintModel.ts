@@ -31,8 +31,8 @@ export function useCodeHintModel() {
       console.log('Starting Wllama model load from simonguest/code-hint...');
 
       const CONFIG_PATHS = {
-        'single-thread/wllama.wasm': '/esm/single-thread/wllama.wasm',
-        'multi-thread/wllama.wasm': '/esm/multi-thread/wllama.wasm',
+        'single-thread/wllama.wasm': new URL(/* vite-ignore */ '/esm/single-thread/wllama.wasm', import.meta.url).toString(),
+        'multi-thread/wllama.wasm': new URL(/* vite-ignore */ '/esm/multi-thread/wllama.wasm', import.meta.url).toString(),
       };
 
       wllama = new Wllama(CONFIG_PATHS);
