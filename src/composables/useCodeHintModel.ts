@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { Wllama, type WllamaChatMessage } from '@wllama/wllama';
+import { Wllama, type WllamaChatMessage, ModelManager } from '@wllama/wllama';
 
 export interface ModelStatus {
   loading: boolean;
@@ -19,7 +19,7 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     file: 'gemma-3-270m-it-code-hint-Q4_K_M.gguf',
   },
   {
-    repo: 'simonguest/gemma-3-1B-it-code-hint',
+    repo: 'simonguest/gemma-3-1b-it-code-hint',
     file: 'gguf/code_hint_Q4_K_M.gguf',
   },
 ];
@@ -140,9 +140,35 @@ export function useCodeHintModel() {
     }
   };
 
+  const clearCache = async () => {
+    try {
+      console.log('Clearing model cache using Wllama ModelManager...');
+
+      // Unload current model if loaded
+      if (wllama) {
+        console.log('Unloading current model...');
+        await wllama.exit();
+        wllama = null;
+        status.value.ready = false;
+      }
+
+      // Use Wllama's built-in ModelManager.clear() method
+      // This clears all cached models from IndexedDB
+      const modelManager = new ModelManager();
+      await modelManager.clear();
+      console.log('Wllama cache cleared successfully');
+
+      return true;
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      throw error;
+    }
+  };
+
   return {
     status,
     loadModel,
     generateHint,
+    clearCache,
   };
 }

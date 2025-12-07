@@ -50,6 +50,14 @@
           {{ example.title }}
         </option>
       </select>
+
+      <button
+        class="clear-cache-btn"
+        @click="handleClearCache"
+        :disabled="clearing || modelStatus.loading"
+      >
+        {{ clearing ? 'Clearing...' : 'Clear Cache' }}
+      </button>
     </div>
 
     <div class="content">
@@ -88,13 +96,14 @@ import CodeEditor from './components/CodeEditor.vue';
 import { useCodeHintModel, AVAILABLE_MODELS } from './composables/useCodeHintModel';
 import { examples } from './examples';
 
-const { status: modelStatus, loadModel, generateHint } = useCodeHintModel();
+const { status: modelStatus, loadModel, generateHint, clearCache } = useCodeHintModel();
 
 const code = ref('# Type or select Python code here...\n');
 const selectedExample = ref<number | null>(null);
 const selectedModel = ref<number>(0); // Default to first model
 const explanation = ref('');
 const generating = ref(false);
+const clearing = ref(false);
 
 let debounceTimer: number | null = null;
 
@@ -108,6 +117,23 @@ const handleModelChange = () => {
   const model = AVAILABLE_MODELS[selectedModel.value];
   explanation.value = '';
   loadModel(model);
+};
+
+const handleClearCache = async () => {
+  if (!confirm('This will clear all cached models and reload the page. Continue?')) {
+    return;
+  }
+
+  clearing.value = true;
+  try {
+    await clearCache();
+    // Reload the page to reset the state
+    window.location.reload();
+  } catch (error) {
+    console.error('Failed to clear cache:', error);
+    alert('Failed to clear cache. Please try again.');
+    clearing.value = false;
+  }
 };
 
 const handleSelectionChange = async (selectedText: string) => {
@@ -272,6 +298,30 @@ body {
 
 .controls select:focus {
   outline: 1px solid #007acc;
+}
+
+.clear-cache-btn {
+  padding: 0.5rem 1rem;
+  background-color: #c5534a;
+  color: #ffffff;
+  border: 1px solid #a03d36;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-left: auto;
+}
+
+.clear-cache-btn:hover:not(:disabled) {
+  background-color: #d66761;
+}
+
+.clear-cache-btn:disabled {
+  background-color: #6a6a6a;
+  border-color: #555555;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .content {
