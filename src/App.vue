@@ -19,37 +19,23 @@
     </header>
 
     <div class="controls">
-      <label for="model-select">Model:</label>
-      <select
-        id="model-select"
-        v-model="selectedModel"
-        @change="handleModelChange"
-        :disabled="modelStatus.loading"
-      >
-        <option
-          v-for="(model, index) in AVAILABLE_MODELS"
-          :key="index"
-          :value="index"
+      <div class="control-group">
+        <label for="model-select">Model:</label>
+        <select
+          id="model-select"
+          v-model="selectedModel"
+          @change="handleModelChange"
+          :disabled="modelStatus.loading"
         >
-          {{ model.repo }}
-        </option>
-      </select>
-
-      <label for="example-select">Code Examples:</label>
-      <select
-        id="example-select"
-        v-model="selectedExample"
-        @change="loadExample"
-      >
-        <option :value="null">-- Select an example --</option>
-        <option
-          v-for="(example, index) in examples"
-          :key="index"
-          :value="index"
-        >
-          {{ example.title }}
-        </option>
-      </select>
+          <option
+            v-for="(model, index) in AVAILABLE_MODELS"
+            :key="index"
+            :value="index"
+          >
+            {{ model.repo }}
+          </option>
+        </select>
+      </div>
 
       <button
         class="clear-cache-btn"
@@ -61,18 +47,8 @@
     </div>
 
     <div class="content">
-      <div class="editor-section">
-        <h2>Python Code Editor</h2>
-        <div class="editor-wrapper">
-          <CodeEditor
-            v-model="code"
-            @selection-change="handleSelectionChange"
-          />
-        </div>
-      </div>
-
       <div class="explanation-section">
-        <h2>Code Explanation</h2>
+        <h2>What does this code do?</h2>
         <div class="explanation-wrapper">
           <div v-if="generating" class="generating">
             <span class="spinner-small"></span>
@@ -84,6 +60,35 @@
           <div v-else class="explanation-placeholder">
             Select some code to see an explanation
           </div>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-header">
+          <h2>Python Code Editor</h2>
+          <div class="example-selector">
+            <label for="example-select">Examples:</label>
+            <select
+              id="example-select"
+              v-model="selectedExample"
+              @change="loadExample"
+            >
+              <option :value="null">-- Select an example --</option>
+              <option
+                v-for="(example, index) in examples"
+                :key="index"
+                :value="index"
+              >
+                {{ example.title }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <CodeEditor
+            v-model="code"
+            @selection-change="handleSelectionChange"
+          />
         </div>
       </div>
     </div>
@@ -277,12 +282,22 @@ body {
   padding: 1rem 2rem;
   border-bottom: 1px solid #3e3e42;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
 }
 
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 250px;
+}
+
 .controls label {
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .controls select {
@@ -293,7 +308,7 @@ body {
   border-radius: 4px;
   font-size: 0.9rem;
   cursor: pointer;
-  min-width: 200px;
+  flex: 1;
 }
 
 .controls select:focus {
@@ -326,23 +341,77 @@ body {
 
 .content {
   display: flex;
+  flex-direction: column;
   flex: 1;
   overflow: hidden;
 }
 
 .editor-section,
 .explanation-section {
-  flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.editor-section {
-  border-right: 1px solid #3e3e42;
+.explanation-section {
+  flex: 0 0 auto;
+  max-height: 30vh;
+  min-height: 150px;
+  border-bottom: 1px solid #3e3e42;
 }
 
-.editor-section h2,
+.editor-section {
+  flex: 1;
+}
+
+.editor-header {
+  background-color: #2d2d30;
+  padding: 0.75rem 2rem;
+  border-bottom: 1px solid #3e3e42;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.editor-header h2 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #cccccc;
+  margin: 0;
+}
+
+.example-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.example-selector label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #cccccc;
+  white-space: nowrap;
+}
+
+.example-selector select {
+  padding: 0.4rem 0.5rem;
+  background-color: #3c3c3c;
+  color: #d4d4d4;
+  border: 1px solid #3e3e42;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.example-selector select:focus {
+  outline: 1px solid #007acc;
+}
+
 .explanation-section h2 {
   background-color: #2d2d30;
   padding: 0.75rem 2rem;
@@ -383,5 +452,166 @@ body {
   color: #6a737d;
   font-style: italic;
   font-size: 0.95rem;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .header {
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .header h1 {
+    font-size: 1.2rem;
+  }
+
+  .model-status {
+    font-size: 0.8rem;
+    align-self: flex-start;
+  }
+
+  .controls {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .control-group {
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+
+  .controls label {
+    font-size: 0.85rem;
+  }
+
+  .controls select {
+    font-size: 0.85rem;
+  }
+
+  .clear-cache-btn {
+    width: 100%;
+    margin-left: 0;
+    font-size: 0.85rem;
+  }
+
+  .editor-header {
+    padding: 0.5rem 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .editor-header h2 {
+    font-size: 0.85rem;
+  }
+
+  .example-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .example-selector label {
+    font-size: 0.8rem;
+  }
+
+  .example-selector select {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .explanation-section h2 {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .explanation-section {
+    min-height: 120px;
+    max-height: 35vh;
+  }
+
+  .explanation-wrapper {
+    padding: 1rem;
+  }
+
+  .explanation-text {
+    font-size: 0.9rem;
+  }
+
+  .explanation-placeholder {
+    font-size: 0.85rem;
+  }
+
+  .generating {
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra small devices (portrait phones) */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1rem;
+  }
+
+  .model-status {
+    font-size: 0.75rem;
+  }
+
+  .controls {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .controls label {
+    font-size: 0.8rem;
+  }
+
+  .controls select {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
+
+  .clear-cache-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .editor-header {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .editor-header h2 {
+    font-size: 0.8rem;
+  }
+
+  .example-selector label {
+    font-size: 0.75rem;
+  }
+
+  .example-selector select {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.35rem;
+  }
+
+  .explanation-section h2 {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .explanation-wrapper {
+    padding: 0.75rem;
+  }
+
+  .explanation-text,
+  .explanation-placeholder,
+  .generating {
+    font-size: 0.85rem;
+  }
 }
 </style>

@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -30,6 +30,7 @@ onMounted(() => {
     extensions: [
       python(),
       oneDark,
+      lineNumbers(),
       keymap.of(defaultKeymap),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
