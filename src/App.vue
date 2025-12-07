@@ -193,11 +193,20 @@ body {
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   background-color: #1e1e1e;
   color: #d4d4d4;
+  touch-action: pan-x pan-y;
 }
 
 #app {
   height: 100vh;
   width: 100vw;
+  touch-action: pan-x pan-y;
+}
+
+/* Allow text selection in code editor and explanation */
+.code-editor,
+.explanation-text {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .app {
