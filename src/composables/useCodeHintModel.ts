@@ -93,7 +93,7 @@ export function useCodeHintModel() {
           top_k: 40,
           top_p: 0.9,
         },
-        useCache: true,
+        useCache: false,
       });
 
       let fullResponse = '';
