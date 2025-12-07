@@ -19,6 +19,22 @@
     </header>
 
     <div class="controls">
+      <label for="model-select">Model:</label>
+      <select
+        id="model-select"
+        v-model="selectedModel"
+        @change="handleModelChange"
+        :disabled="modelStatus.loading"
+      >
+        <option
+          v-for="(model, index) in AVAILABLE_MODELS"
+          :key="index"
+          :value="index"
+        >
+          {{ model.repo }}
+        </option>
+      </select>
+
       <label for="example-select">Code Examples:</label>
       <select
         id="example-select"
@@ -69,13 +85,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import CodeEditor from './components/CodeEditor.vue';
-import { useCodeHintModel } from './composables/useCodeHintModel';
+import { useCodeHintModel, AVAILABLE_MODELS } from './composables/useCodeHintModel';
 import { examples } from './examples';
 
 const { status: modelStatus, loadModel, generateHint } = useCodeHintModel();
 
 const code = ref('# Type or select Python code here...\n');
 const selectedExample = ref<number | null>(null);
+const selectedModel = ref<number>(0); // Default to first model
 const explanation = ref('');
 const generating = ref(false);
 
@@ -85,6 +102,12 @@ const loadExample = () => {
   if (selectedExample.value !== null) {
     code.value = examples[selectedExample.value].code;
   }
+};
+
+const handleModelChange = () => {
+  const model = AVAILABLE_MODELS[selectedModel.value];
+  explanation.value = '';
+  loadModel(model);
 };
 
 const handleSelectionChange = async (selectedText: string) => {
@@ -123,7 +146,7 @@ const handleSelectionChange = async (selectedText: string) => {
 };
 
 onMounted(() => {
-  loadModel();
+  loadModel(AVAILABLE_MODELS[selectedModel.value]);
 });
 </script>
 

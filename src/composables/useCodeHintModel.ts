@@ -8,6 +8,22 @@ export interface ModelStatus {
   error: string | null;
 }
 
+export interface ModelConfig {
+  repo: string;
+  file: string;
+}
+
+export const AVAILABLE_MODELS: ModelConfig[] = [
+  {
+    repo: 'simonguest/gemma-3-270m-it-code-hint',
+    file: 'gemma-3-270m-it-code-hint-Q4_K_M.gguf',
+  },
+  {
+    repo: 'simonguest/gemma-3-1B-it-code-hint',
+    file: 'gguf/code_hint_Q4_K_M.gguf',
+  },
+];
+
 export function useCodeHintModel() {
   const status = ref<ModelStatus>({
     loading: false,
@@ -18,9 +34,18 @@ export function useCodeHintModel() {
 
   let wllama: Wllama | null = null;
 
-  const loadModel = async () => {
-    if (wllama || status.value.loading) {
+  const loadModel = async (modelConfig: ModelConfig) => {
+    // If already loading, don't start another load
+    if (status.value.loading) {
       return;
+    }
+
+    // If a model is already loaded, unload it first
+    if (wllama) {
+      console.log('Unloading previous model...');
+      await wllama.exit();
+      wllama = null;
+      status.value.ready = false;
     }
 
     status.value.loading = true;
@@ -28,7 +53,7 @@ export function useCodeHintModel() {
     status.value.progress = 0;
 
     try {
-      console.log('Starting Wllama model load from simonguest/code-hint...');
+      console.log(`Starting Wllama model load from ${modelConfig.repo}...`);
 
       const CONFIG_PATHS = {
         'single-thread/wllama.wasm': new URL(/* vite-ignore */ '/esm/single-thread/wllama.wasm', import.meta.url).toString(),
@@ -44,8 +69,8 @@ export function useCodeHintModel() {
       };
 
       await wllama.loadModelFromHF(
-        'simonguest/gemma-3-270m-it-code-hint',
-        'gemma-3-270m-it-code-hint-Q4_K_M.gguf',
+        modelConfig.repo,
+        modelConfig.file,
         {
           progressCallback,
         }
