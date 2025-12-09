@@ -22,6 +22,10 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
     repo: 'simonguest/gemma-3-1b-it-code-hint',
     file: 'gguf/code_hint_Q4_K_M.gguf',
   },
+  {
+    repo: 'simonguest/gemma-3-1b-it-code-hint-2',
+    file: 'gemma-3-1b-it-code-hint-2-Q4_K_M.gguf',
+  },
 ];
 
 export function useCodeHintModel() {
