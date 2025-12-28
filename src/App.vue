@@ -50,12 +50,12 @@
       <div class="explanation-section">
         <h2>What does this code do?</h2>
         <div class="explanation-wrapper">
-          <div v-if="generating" class="generating">
+          <div v-if="explanation" class="explanation-text">
+            {{ explanation }}<span v-if="generating" class="typing-cursor">▊</span>
+          </div>
+          <div v-else-if="generating" class="generating">
             <span class="spinner-small"></span>
             <span>Thinking...</span>
-          </div>
-          <div v-else-if="explanation" class="explanation-text">
-            {{ explanation }}
           </div>
           <div v-else class="explanation-placeholder">
             Select some code to see an explanation
@@ -157,16 +157,18 @@ const handleSelectionChange = async (selectedCode: string) => {
 
   debounceTimer = window.setTimeout(async () => {
     generating.value = true;
+    explanation.value = ''; // Clear previous explanation
     try {
       console.log('=== Code Hint Request ===');
       console.log('Selected code:', selectedCode);
 
-      const hint = await generateHint(code.value, selectedCode);
+      await generateHint(code.value, selectedCode, (token: string) => {
+        // Stream each token to the UI as it arrives
+        explanation.value += token;
+      });
 
       console.log('=== Code Hint Response ===');
-      console.log('Generated hint:', hint);
-
-      explanation.value = hint;
+      console.log('Generated hint:', explanation.value);
     } catch (error) {
       console.error('Failed to generate hint:', error);
       explanation.value = 'Failed to generate explanation. Please try again.';
@@ -461,6 +463,21 @@ body {
   color: #6a737d;
   font-style: italic;
   font-size: 0.95rem;
+}
+
+.typing-cursor {
+  color: #007acc;
+  animation: blink 1s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
 }
 
 /* Mobile Responsive Styles */

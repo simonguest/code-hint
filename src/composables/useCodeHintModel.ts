@@ -92,7 +92,11 @@ export function useCodeHintModel() {
     }
   };
 
-  const generateHint = async (code: string, highlightedCode: string): Promise<string> => {
+  const generateHint = async (
+    code: string,
+    highlightedCode: string,
+    onToken?: (token: string) => void
+  ): Promise<string> => {
     if (!wllama || !status.value.ready) {
       throw new Error('Model not ready');
     }
@@ -122,8 +126,14 @@ export function useCodeHintModel() {
       console.log('=== Streaming tokens ===');
       for await (const chunk of stream) {
         tokenCount++;
-        // console.log(`Token ${tokenCount}:`, chunk);
         fullResponse += chunk;
+
+        // Call the onToken callback if provided
+        if (onToken) {
+          onToken(chunk);
+          // Allow the browser to paint by yielding to the event loop
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
       }
       console.log('=== End of stream ===');
       console.log(`Total tokens: ${tokenCount}`);
