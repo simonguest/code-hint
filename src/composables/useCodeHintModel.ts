@@ -15,12 +15,8 @@ export interface ModelConfig {
 
 export const AVAILABLE_MODELS: ModelConfig[] = [
   {
-    repo: 'simonguest/gemma-3-270m-it-code-hint-2',
-    file: 'gemma-3-270m-it-code-hint-2-Q4_K_M.gguf',
-  },
-  {
-    repo: 'simonguest/gemma-3-1b-it-code-hint-2',
-    file: 'gemma-3-1b-it-code-hint-2-Q4_K_M.gguf',
+    repo: 'simonguest/gemma-3-1b-it-code-hint-3',
+    file: 'gemma-3-1b-it-code-hint-3-Q4_K_M.gguf',
   },
 ];
 
@@ -96,7 +92,7 @@ export function useCodeHintModel() {
     }
   };
 
-  const generateHint = async (code: string): Promise<string> => {
+  const generateHint = async (code: string, highlightedCode: string): Promise<string> => {
     if (!wllama || !status.value.ready) {
       throw new Error('Model not ready');
     }
@@ -105,14 +101,14 @@ export function useCodeHintModel() {
       const messages: WllamaChatMessage[] = [
         {
           role: 'user',
-          content: `\`\`\`python\n${code}\n\`\`\``
+          content: `<code>\n${code}\n</code><highlight>\n${highlightedCode}\n</highlight>`
         },
       ];
 
       console.log('Model request messages:', messages);
 
       const stream = await wllama.createChatCompletion(messages, {
-        nPredict: 100,
+        nPredict: 256,
         sampling: {
           temp: 0.7,
           top_k: 40,

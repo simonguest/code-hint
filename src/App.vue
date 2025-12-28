@@ -52,7 +52,7 @@
         <div class="explanation-wrapper">
           <div v-if="generating" class="generating">
             <span class="spinner-small"></span>
-            <span>Generating explanation...</span>
+            <span>Thinking...</span>
           </div>
           <div v-else-if="explanation" class="explanation-text">
             {{ explanation }}
@@ -141,12 +141,12 @@ const handleClearCache = async () => {
   }
 };
 
-const handleSelectionChange = async (selectedText: string) => {
+const handleSelectionChange = async (selectedCode: string) => {
   if (debounceTimer) {
     clearTimeout(debounceTimer);
   }
 
-  if (!selectedText.trim()) {
+  if (!selectedCode.trim()) {
     explanation.value = '';
     return;
   }
@@ -159,9 +159,9 @@ const handleSelectionChange = async (selectedText: string) => {
     generating.value = true;
     try {
       console.log('=== Code Hint Request ===');
-      console.log('Selected code:', selectedText);
+      console.log('Selected code:', selectedCode);
 
-      const hint = await generateHint(selectedText);
+      const hint = await generateHint(code.value, selectedCode);
 
       console.log('=== Code Hint Response ===');
       console.log('Generated hint:', hint);
