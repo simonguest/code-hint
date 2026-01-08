@@ -42,7 +42,7 @@
         @click="handleClearCache"
         :disabled="clearing || modelStatus.loading"
       >
-        {{ clearing ? 'Clearing...' : 'Clear Cache' }}
+        {{ clearing ? "Clearing..." : "Clear Cache" }}
       </button>
     </div>
 
@@ -51,7 +51,8 @@
         <h2>What does this code do?</h2>
         <div class="explanation-wrapper">
           <div v-if="explanation" class="explanation-text">
-            {{ explanation }}<span v-if="generating" class="typing-cursor">▊</span>
+            {{ explanation
+            }}<span v-if="generating" class="typing-cursor">▊</span>
           </div>
           <div v-else-if="generating" class="generating">
             <span class="spinner-small"></span>
@@ -96,17 +97,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import CodeEditor from './components/CodeEditor.vue';
-import { useCodeHintModel, AVAILABLE_MODELS } from './composables/useCodeHintModel';
-import { examples } from './examples';
+import { ref, onMounted } from "vue";
+import CodeEditor from "./components/CodeEditor.vue";
+import {
+  useCodeHintModel,
+  AVAILABLE_MODELS,
+} from "./composables/useCodeHintModel";
+import { examples } from "./examples";
 
-const { status: modelStatus, loadModel, generateHint, clearCache } = useCodeHintModel();
+const {
+  status: modelStatus,
+  loadModel,
+  generateHint,
+  clearCache,
+} = useCodeHintModel();
 
-const code = ref('# Type or select Python code here...\n');
+const code = ref("# Type or select Python code here...\n");
 const selectedExample = ref<number | null>(null);
 const selectedModel = ref<number>(0); // Default to first model
-const explanation = ref('');
+const explanation = ref("");
 const generating = ref(false);
 const clearing = ref(false);
 
@@ -120,12 +129,14 @@ const loadExample = () => {
 
 const handleModelChange = () => {
   const model = AVAILABLE_MODELS[selectedModel.value];
-  explanation.value = '';
+  explanation.value = "";
   loadModel(model);
 };
 
 const handleClearCache = async () => {
-  if (!confirm('This will clear all cached models and reload the page. Continue?')) {
+  if (
+    !confirm("This will clear all cached models and reload the page. Continue?")
+  ) {
     return;
   }
 
@@ -135,8 +146,8 @@ const handleClearCache = async () => {
     // Reload the page to reset the state
     window.location.reload();
   } catch (error) {
-    console.error('Failed to clear cache:', error);
-    alert('Failed to clear cache. Please try again.');
+    console.error("Failed to clear cache:", error);
+    alert("Failed to clear cache. Please try again.");
     clearing.value = false;
   }
 };
@@ -147,7 +158,7 @@ const handleSelectionChange = async (selectedCode: string) => {
   }
 
   if (!selectedCode.trim()) {
-    explanation.value = '';
+    explanation.value = "";
     return;
   }
 
@@ -157,28 +168,84 @@ const handleSelectionChange = async (selectedCode: string) => {
 
   debounceTimer = window.setTimeout(async () => {
     generating.value = true;
-    explanation.value = ''; // Clear previous explanation
+    explanation.value = ""; // Clear previous explanation
     try {
-      console.log('=== Code Hint Request ===');
-      console.log('Selected code:', selectedCode);
+      console.log("=== Code Hint Request ===");
+      console.log("Selected code:", selectedCode);
 
       await generateHint(code.value, selectedCode, (token: string) => {
         // Stream each token to the UI as it arrives
         explanation.value += token;
       });
 
-      console.log('=== Code Hint Response ===');
-      console.log('Generated hint:', explanation.value);
+      console.log("=== Code Hint Response ===");
+      console.log("Generated hint:", explanation.value);
     } catch (error) {
-      console.error('Failed to generate hint:', error);
-      explanation.value = 'Failed to generate explanation. Please try again.';
+      console.error("Failed to generate hint:", error);
+      explanation.value = "Failed to generate explanation. Please try again.";
     } finally {
       generating.value = false;
     }
   }, 500);
 };
 
+import { pipeline } from "@huggingface/transformers";
+
+const testTransformers = async () => {
+  console.log("Loading model");
+
+  const generator = await pipeline(
+    "text-generation",
+    "simonguest/gemma-3-1b-it-code-hint-3-onnx",
+    {
+      subfolder: "",
+      device: "webgpu",
+    }
+  );
+
+  console.log("Model loaded!");
+
+  // Test prompt
+  const code = `<code>
+class Dog:
+  def __init__(self, name, age):
+      self.name = name
+      self.age = age
+
+  def bark(self):
+      return f"{self.name} says Woof!"
+
+  def get_age(self):
+      return f"{self.name} is {self.age} years old"
+
+my_dog = Dog("Buddy", 3)
+print(my_dog.bark())
+print(my_dog.get_age())
+</code>
+<highlight>
+    my_dog = Dog("Buddy", 3)
+</highlight>`;
+  const prompt = `<start_of_turn>user\n${code}<end_of_turn>\n<start_of_turn>model\n`;
+
+  console.log(`\nPrompt: ${prompt}`);
+  console.log("Generating response...\n");
+
+  // Generate text
+  const output = await generator(prompt, {
+    max_new_tokens: 256,
+    temperature: 0.7,
+    do_sample: true,
+  });
+
+  // Print the result
+  const fullText = output[0].generated_text;
+  const modelResponse = fullText.slice(prompt.length).split('<end_of_turn>')[0].trim();
+  console.log(modelResponse)
+    
+};
+
 onMounted(() => {
+  testTransformers();
   loadModel(AVAILABLE_MODELS[selectedModel.value]);
 });
 </script>
@@ -472,10 +539,12 @@ body {
 }
 
 @keyframes blink {
-  0%, 50% {
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+  51%,
+  100% {
     opacity: 0;
   }
 }
