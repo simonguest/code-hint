@@ -105,8 +105,6 @@ import {
 } from "./composables/useCodeHintModel";
 import { examples } from "./examples";
 
-import * as webllm from "@mlc-ai/web-llm";
-
 const {
   status: modelStatus,
   loadModel,
@@ -191,64 +189,8 @@ const handleSelectionChange = async (selectedCode: string) => {
   }, 500);
 };
 
-const testMLC = async () => {
-  const appConfig = {
-    model_list: [
-      {
-        model:
-          "https://huggingface.co/simonguest/gemma-3-1b-it-code-hint-3-MLC",
-        model_id: "gemma-3-1b-it-code-hint-3",
-        // Reuse the prebuilt Gemma 2B library (compatible with 1B architecture)
-        model_lib:
-          "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/refs/heads/main/web-llm-models/v0_2_80/gemma-3-1b-it-q4f16_1-ctx4k_cs1k-webgpu.wasm",
-        // Override the sliding window configuration
-        overrides: {
-          sliding_window_size: -1, // Disable sliding window
-          context_window_size: 8192, // Keep the full context window
-          temperature: 0.7,
-          repetition_penalty: 1.1
-        },
-      },
-    ],
-  };
-  console.log("Loading model");
-
-  const engine = await webllm.CreateMLCEngine("gemma-3-1b-it-code-hint-3", {
-    appConfig,
-  });
-
-  const code = `<code>
-class Dog:
-  def __init__(self, name, age):
-      self.name = name
-      self.age = age
-
-  def bark(self):
-      return f"{self.name} says Woof!"
-
-  def get_age(self):
-      return f"{self.name} is {self.age} years old"
-
-my_dog = Dog("Buddy", 3)
-print(my_dog.bark())
-print(my_dog.get_age())
-</code>
-<highlight>
-    my_dog = Dog("Buddy", 3)
-</highlight>`;
-
-  console.log("sending message");
-
-  const response = await engine.chat.completions.create({
-    messages: [{ role: "user", content: code }],
-  });
-
-  console.log(response);
-};
-
 onMounted(() => {
-  testMLC();
-  //loadModel(AVAILABLE_MODELS[selectedModel.value]);
+  loadModel(AVAILABLE_MODELS[selectedModel.value]);
 });
 </script>
 
