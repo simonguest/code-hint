@@ -18,7 +18,7 @@ export const AVAILABLE_MODELS: ModelConfig[] = [
   {
     repo: 'simonguest/Qwen3-1.7B-code-hint-3-MLC',
     modelId: 'Qwen3-1.7B-it-code-hint-3',
-    modelLib: '/Qwen3-1.7B-code-hint-3-webgpu.wasm',
+    modelLib: './Qwen3-1.7B-code-hint-3-webgpu.wasm',
   },
 ];
 
