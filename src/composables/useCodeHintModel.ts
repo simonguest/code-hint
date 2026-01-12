@@ -125,19 +125,62 @@ export function useCodeHintModel() {
 
       let fullResponse = '';
       let tokenCount = 0;
+      let isInThinkingBlock = false;
+      let hasStartedResponse = false; // Track if we've output any non-whitespace content
       console.log('=== Streaming tokens ===');
 
       for await (const chunk of chunks) {
         const delta = chunk.choices[0]?.delta?.content;
         if (delta) {
           tokenCount++;
-          fullResponse += delta;
 
-          // Call the onToken callback if provided
-          if (onToken) {
-            onToken(delta);
-            // Allow the browser to paint by yielding to the event loop
-            await new Promise(resolve => setTimeout(resolve, 0));
+          // Track if we're inside a thinking block
+          let processedDelta = '';
+          for (let i = 0; i < delta.length; i++) {
+            const char = delta[i];
+
+            // Check if we're entering a thinking block
+            if (!isInThinkingBlock && delta.substring(i).startsWith('<think>')) {
+              isInThinkingBlock = true;
+              i += 6; // Skip past '<think>'
+              continue;
+            }
+
+            // Check if we're exiting a thinking block
+            if (isInThinkingBlock && delta.substring(i).startsWith('</think>')) {
+              isInThinkingBlock = false;
+              i += 7; // Skip past '</think>'
+              continue;
+            }
+
+            // Only add characters if we're not in a thinking block
+            if (!isInThinkingBlock) {
+              processedDelta += char;
+            }
+          }
+
+          if (processedDelta) {
+            // Skip leading newlines until we have actual content
+            if (!hasStartedResponse) {
+              const trimmed = processedDelta.replace(/^\n+/, '');
+              if (trimmed.length > 0) {
+                hasStartedResponse = true;
+                processedDelta = trimmed;
+              } else {
+                processedDelta = '';
+              }
+            }
+
+            if (processedDelta) {
+              fullResponse += processedDelta;
+
+              // Call the onToken callback if provided
+              if (onToken) {
+                onToken(processedDelta);
+                // Allow the browser to paint by yielding to the event loop
+                await new Promise(resolve => setTimeout(resolve, 0));
+              }
+            }
           }
         }
       }

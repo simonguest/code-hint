@@ -468,6 +468,7 @@ body {
   line-height: 1.6;
   color: #d4d4d4;
   font-size: 1rem;
+  white-space: pre-wrap;
 }
 
 .explanation-placeholder {
