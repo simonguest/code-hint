@@ -16,9 +16,9 @@ export interface ModelConfig {
 
 export const AVAILABLE_MODELS: ModelConfig[] = [
   {
-    repo: 'simonguest/gemma-3-1b-it-code-hint-3-MLC',
-    modelId: 'gemma-3-1b-it-code-hint-3',
-    modelLib: 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/refs/heads/main/web-llm-models/v0_2_80/gemma-3-1b-it-q4f16_1-ctx4k_cs1k-webgpu.wasm',
+    repo: 'simonguest/Qwen3-1.7B-code-hint-3-MLC',
+    modelId: 'Qwen3-1.7B-it-code-hint-3',
+    modelLib: '/Qwen3-1.7B-code-hint-3-webgpu.wasm',
   },
 ];
 
@@ -60,11 +60,10 @@ export function useCodeHintModel() {
             model_id: modelConfig.modelId,
             model_lib: modelConfig.modelLib,
             overrides: {
-              sliding_window_size: -1, // Disable sliding window
-              context_window_size: 8192, // Full context window
+              //sliding_window_size: -1, // Disable sliding window
+              //context_window_size: -1, // Full context window
               temperature: 0.5,
-              top_p: 0.85,
-              repetition_penalty: 1.15
+              //attention_sink_size: 0
             },
           },
         ],
@@ -111,12 +110,14 @@ export function useCodeHintModel() {
     }
 
     try {
-      const prompt = `<code>\n${code}\n</code>\n<highlight>\n${highlightedCode}\n</highlight>`;
+      //const prompt = `<code>\n${code}\n</code>\n<highlight>\n${highlightedCode}\n</highlight>`;
 
       console.log('Model request prompt:', prompt);
 
       const chunks = await engine.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: `<code>\n${code}\n</code>\n`},
+          { role: 'user', content: `<highlight>\n${highlightedCode}\n</highlight>` }],
         temperature: 0.7,
         max_tokens: 256,
         stream: true,
