@@ -89,6 +89,7 @@
           <CodeEditor
             v-model="code"
             @selection-change="handleSelectionChange"
+            @request-hint="handleRequestHint"
           />
         </div>
       </div>
@@ -118,8 +119,7 @@ const selectedModel = ref<number>(0); // Default to first model
 const explanation = ref("");
 const generating = ref(false);
 const clearing = ref(false);
-
-let debounceTimer: number | null = null;
+const selectedCode = ref("");
 
 const loadExample = () => {
   if (selectedExample.value !== null) {
@@ -152,41 +152,41 @@ const handleClearCache = async () => {
   }
 };
 
-const handleSelectionChange = async (selectedCode: string) => {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
+const handleSelectionChange = (newSelection: string) => {
+  // Just store the selected code, don't generate explanation yet
+  selectedCode.value = newSelection;
 
-  if (!selectedCode.trim()) {
+  // Only clear explanation if not currently generating and selection is empty
+  if (!newSelection.trim() && !generating.value) {
     explanation.value = "";
+  }
+};
+
+const handleRequestHint = async () => {
+  if (!selectedCode.value.trim() || !modelStatus.value.ready) {
     return;
   }
 
-  if (!modelStatus.value.ready) {
-    return;
+  generating.value = true;
+  explanation.value = ""; // Clear previous explanation
+
+  try {
+    console.log("=== Code Hint Request ===");
+    console.log("Selected code:", selectedCode.value);
+
+    await generateHint(code.value, selectedCode.value, (token: string) => {
+      // Stream each token to the UI as it arrives
+      explanation.value += token;
+    });
+
+    console.log("=== Code Hint Response ===");
+    console.log("Generated hint:", explanation.value);
+  } catch (error) {
+    console.error("Failed to generate hint:", error);
+    explanation.value = "Failed to generate explanation. Please try again.";
+  } finally {
+    generating.value = false;
   }
-
-  debounceTimer = window.setTimeout(async () => {
-    generating.value = true;
-    explanation.value = ""; // Clear previous explanation
-    try {
-      console.log("=== Code Hint Request ===");
-      console.log("Selected code:", selectedCode);
-
-      await generateHint(code.value, selectedCode, (token: string) => {
-        // Stream each token to the UI as it arrives
-        explanation.value += token;
-      });
-
-      console.log("=== Code Hint Response ===");
-      console.log("Generated hint:", explanation.value);
-    } catch (error) {
-      console.error("Failed to generate hint:", error);
-      explanation.value = "Failed to generate explanation. Please try again.";
-    } finally {
-      generating.value = false;
-    }
-  }, 500);
 };
 
 onMounted(() => {
