@@ -87,6 +87,7 @@
         </div>
         <div class="editor-wrapper">
           <CodeEditor
+            ref="codeEditorRef"
             v-model="code"
             @selection-change="handleSelectionChange"
             @request-hint="handleRequestHint"
@@ -127,6 +128,7 @@ const explanation = ref("");
 const generating = ref(false);
 const clearing = ref(false);
 const selectedCode = ref("");
+const codeEditorRef = ref<InstanceType<typeof CodeEditor> | null>(null);
 
 // Computed property to render explanation as markdown
 const renderedExplanation = computed(() => {
@@ -137,6 +139,11 @@ const renderedExplanation = computed(() => {
 const loadExample = () => {
   if (selectedExample.value !== null) {
     code.value = examples[selectedExample.value].code;
+    // Clear the explanation and selected code when loading a new example
+    explanation.value = "";
+    selectedCode.value = "";
+    // Clear the editor selection
+    codeEditorRef.value?.clearSelection();
   }
 };
 

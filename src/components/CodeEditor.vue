@@ -160,6 +160,22 @@ onMounted(() => {
   });
 });
 
+// Method to clear selection (exposed to parent)
+const clearSelection = () => {
+  if (editorView) {
+    editorView.dispatch({
+      selection: { anchor: 0 },
+      effects: hideTooltipEffect.of(true),
+    });
+    // Force the editor to update visually by focusing and then blurring
+    editorView.focus();
+    editorView.contentDOM.blur();
+  }
+};
+
+// Expose clearSelection to parent component
+defineExpose({ clearSelection });
+
 watch(
   () => props.modelValue,
   (newValue) => {
