@@ -51,8 +51,8 @@
         <h2>What does this code do?</h2>
         <div class="explanation-wrapper">
           <div v-if="explanation" class="explanation-text">
-            {{ explanation
-            }}<span v-if="generating" class="typing-cursor">▊</span>
+            <div v-html="renderedExplanation"></div>
+            <span v-if="generating" class="typing-cursor">▊</span>
           </div>
           <div v-else-if="generating" class="generating">
             <span class="spinner-small"></span>
@@ -98,13 +98,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { marked } from "marked";
 import CodeEditor from "./components/CodeEditor.vue";
 import {
   useCodeHintModel,
   AVAILABLE_MODELS,
 } from "./composables/useCodeHintModel";
 import { examples } from "./examples";
+
+// Configure marked for safe rendering
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
 
 const {
   status: modelStatus,
@@ -120,6 +127,12 @@ const explanation = ref("");
 const generating = ref(false);
 const clearing = ref(false);
 const selectedCode = ref("");
+
+// Computed property to render explanation as markdown
+const renderedExplanation = computed(() => {
+  if (!explanation.value) return "";
+  return marked(explanation.value);
+});
 
 const loadExample = () => {
   if (selectedExample.value !== null) {
@@ -468,7 +481,39 @@ body {
   line-height: 1.6;
   color: #d4d4d4;
   font-size: 1rem;
-  white-space: pre-wrap;
+}
+
+.explanation-text code {
+  background-color: #3c3c3c;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.explanation-text pre {
+  background-color: #2d2d30;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.explanation-text pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.explanation-text p {
+  margin: 0.5rem 0;
+}
+
+.explanation-text p:first-child {
+  margin-top: 0;
+}
+
+.explanation-text p:last-child {
+  margin-bottom: 0;
 }
 
 .explanation-placeholder {

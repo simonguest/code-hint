@@ -17,6 +17,7 @@
     "@mlc-ai/web-llm": "^0.2.80",
     "@wllama/wllama": "^2.3.7",
     "codemirror": "^6.0.1",
+    "marked": "^17.0.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {
